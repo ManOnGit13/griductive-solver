@@ -14,7 +14,8 @@
     {"id": "c2", "type": "SAME",      "a": "A1", "b": "B1"}
     {"id": "c3", "type": "DIFFERENT", "a": "A1", "b": "B1"}
     {"id": "c4", "type": "EXACTLY",   "k": 1, "region": {...}}     (tương tự AT_LEAST, AT_MOST)
-    {"id": "c5", "type": "PARITY",    "parity": "ODD", "region": {...}}   (phần mở rộng)
+    {"id": "c5", "type": "NO",        "region": {...}}             (viết tắt của EXACTLY k=0)
+    {"id": "c6", "type": "PARITY",    "parity": "ODD", "region": {...}}   (phần mở rộng)
 
 Định dạng vùng (dict):
     {"kind": "row", "row": 2}            {"kind": "col", "col": "B"}
@@ -26,15 +27,14 @@ from itertools import combinations, product
 
 COLS = "ABCDEFGHIJ"
 COUNT_TYPES = ("EXACTLY", "AT_LEAST", "AT_MOST")
+PARITY_MAX_CELLS = 8   # giới hạn số ô cho PARITY (2^7 = 128 mệnh đề) để tránh treo trên lưới 5x5
 
 
 class ClueError(ValueError):
-    """Lỗi khi clue hoặc vùng không hợp lệ."""
+    """Lỗi khi clue, vùng hoặc trạng thái không hợp lệ."""
 
 
-# ----------------------------------------------------------------------------
-# 1. Ô và biến
-# ----------------------------------------------------------------------------
+# 1. Ô, biến và chuẩn hóa trạng thái
 def parse_cell(cell, n):
     """'C2' -> (chỉ_số_hàng, chỉ_số_cột) = (1, 2), cả hai đếm từ 0."""
     if not isinstance(cell, str) or len(cell) < 2 or not cell[1:].isdigit():
@@ -67,14 +67,25 @@ def cell_of(v, n):
     return cell_name(v // n, v % n)
 
 
-# ----------------------------------------------------------------------------
+def as_bool(status):
+    """Chuẩn hóa trạng thái: True/'CRIMINAL' -> True, False/'INNOCENT' -> False."""
+    if isinstance(status, bool):
+        return status
+    if status == "CRIMINAL":
+        return True
+    if status == "INNOCENT":
+        return False
+    raise ClueError(f"Status must be bool, 'CRIMINAL' or 'INNOCENT', got {status!r}")
+
+
 # 2. Vùng -> danh sách ô (sắp theo thứ tự hàng, không trùng, không rỗng)
-# ----------------------------------------------------------------------------
 def region(spec, n):
+    if not isinstance(spec, dict):
+        raise ClueError(f"Region must be a dict, got {spec!r}")
     kind = spec.get("kind")
     if kind == "row":                                   # cả một hàng
         row = spec.get("row")
-        if not isinstance(row, int) or not 1 <= row <= n:
+        if not isinstance(row, int) or isinstance(row, bool) or not 1 <= row <= n:
             raise ClueError(f"Bad row: {row!r}")
         cells = [cell_name(row - 1, c) for c in range(n)]
     elif kind == "col":                                 # cả một cột
@@ -88,7 +99,10 @@ def region(spec, n):
                  for r in range(r0 - 1, r0 + 2) for c in range(c0 - 1, c0 + 2)
                  if 0 <= r < n and 0 <= c < n and (r, c) != (r0, c0)]
     elif kind == "explicit":                            # danh sách ô chỉ định
-        cells = [cell_name(*parse_cell(x, n)) for x in spec.get("cells", [])]
+        raw = spec.get("cells")
+        if not isinstance(raw, list):
+            raise ClueError("Explicit region needs a list 'cells'")
+        cells = [cell_name(*parse_cell(x, n)) for x in raw]
         if len(set(cells)) != len(cells):
             raise ClueError("Explicit region has duplicate cells")
     # ---- PHẦN MỞ RỘNG 1: vùng nâng cao ----
@@ -113,9 +127,7 @@ def region(spec, n):
     return sorted(set(cells), key=lambda x: var(x, n))
 
 
-# ----------------------------------------------------------------------------
 # 3. Các khối CNF cơ bản (mã hóa tổ hợp trực tiếp, không dùng biến phụ)
-# ----------------------------------------------------------------------------
 def at_most(lits, k):
     """Nhiều nhất k literal đúng  <=>  không có nhóm k+1 literal nào cùng đúng."""
     return [[-x for x in group] for group in combinations(lits, k + 1)]
@@ -140,11 +152,11 @@ def parity(lits, odd):
     return clauses
 
 
-# ----------------------------------------------------------------------------
 # 4. Clue -> CNF
-# ----------------------------------------------------------------------------
 def check_clue(clue, n):
     """Kiểm tra clue hợp lệ; nếu sai thì ném ClueError kèm id của clue."""
+    if not isinstance(clue, dict):
+        raise ClueError(f"Clue must be a dict, got {clue!r}")
     t = clue.get("type")
     try:
         if t == "FACT":
@@ -154,12 +166,16 @@ def check_clue(clue, n):
         elif t in ("SAME", "DIFFERENT"):
             if var(clue.get("a"), n) == var(clue.get("b"), n):
                 raise ClueError("a and b must be different cells")
+        elif t == "NO":
+            region(clue.get("region"), n)
         elif t in COUNT_TYPES:
-            k, size = clue.get("k"), len(region(clue.get("region", {}), n))
+            k, size = clue.get("k"), len(region(clue.get("region"), n))
             if not isinstance(k, int) or isinstance(k, bool) or not 0 <= k <= size:
                 raise ClueError(f"k must be an integer with 0 <= k <= {size}")
         elif t == "PARITY":
-            region(clue.get("region", {}), n)
+            size = len(region(clue.get("region"), n))
+            if size > PARITY_MAX_CELLS:
+                raise ClueError(f"PARITY region has {size} cells (max {PARITY_MAX_CELLS})")
             if clue.get("parity") not in ("ODD", "EVEN"):
                 raise ClueError("parity must be ODD or EVEN")
         else:
@@ -182,6 +198,8 @@ def encode_clue(clue, n):
         a, b = var(clue["a"], n), var(clue["b"], n)
         return [[a, b], [-a, -b]]
     lits = [var(c, n) for c in region(clue["region"], n)]
+    if t == "NO":                                # NO(R) = EXACTLY(0, R)
+        return at_most(lits, 0)
     if t == "AT_MOST":
         return at_most(lits, clue["k"])
     if t == "AT_LEAST":
@@ -191,14 +209,12 @@ def encode_clue(clue, n):
     return parity(lits, clue["parity"] == "ODD")  # PHẦN MỞ RỘNG 2: PARITY (chẵn/lẻ)
 
 
-# ----------------------------------------------------------------------------
 # 5. Cơ sở tri thức KB_t
-# ----------------------------------------------------------------------------
 def build_kb(revealed_clues, known, n):
     """KB_t = CNF(các clue đã lật) + unit clause của các verdict đã chứng minh.
 
     revealed_clues : list các clue (dict) - CHỈ truyền clue đã lật
-    known          : {ô: True/False}  (True = tội phạm), các verdict đã chứng minh
+    known          : {ô: True/False hoặc 'CRIMINAL'/'INNOCENT'}, verdict đã chứng minh
     trả về         : (clauses, stats)
         clauses = list[list[int]], các biến là 1..n*n
         stats   = {"primary_vars", "aux_vars", "clauses", "clues", "units"}
@@ -208,26 +224,27 @@ def build_kb(revealed_clues, known, n):
         clauses += encode_clue(clue, n)
     for cell in sorted(known, key=lambda c: var(c, n)):   # thêm unit clause theo thứ tự biến
         x = var(cell, n)
-        clauses.append([x] if known[cell] else [-x])
+        clauses.append([x] if as_bool(known[cell]) else [-x])
     stats = {"primary_vars": n * n, "aux_vars": 0, "clauses": len(clauses),
              "clues": len(revealed_clues), "units": len(known)}
     return clauses, stats
 
 
-# ----------------------------------------------------------------------------
-# 6. Bộ đánh giá ngữ nghĩa trực tiếp (KHÔNG dùng bộ mã hóa CNF)
-# ----------------------------------------------------------------------------
+# 6. Bộ đánh giá ngữ nghĩa trực tiếp & tiện ích cho GUI
 def evaluate(clue, assignment, n):
-    """Clue có đúng với một phép gán đầy đủ {ô: True/False} hay không?"""
+    """Clue có đúng với một phép gán đầy đủ {ô: True/False hoặc 'CRIMINAL'/'INNOCENT'} không?"""
     check_clue(clue, n)
+    val = {c: as_bool(v) for c, v in assignment.items()}
     t = clue["type"]
     if t == "FACT":
-        return assignment[clue["cell"]] == (clue["status"] == "CRIMINAL")
+        return val[clue["cell"]] == (clue["status"] == "CRIMINAL")
     if t == "SAME":
-        return assignment[clue["a"]] == assignment[clue["b"]]
+        return val[clue["a"]] == val[clue["b"]]
     if t == "DIFFERENT":
-        return assignment[clue["a"]] != assignment[clue["b"]]
-    count = sum(assignment[c] for c in region(clue["region"], n))   # số tội phạm trong vùng
+        return val[clue["a"]] != val[clue["b"]]
+    count = sum(val[c] for c in region(clue["region"], n))   # số tội phạm trong vùng
+    if t == "NO":
+        return count == 0
     if t == "EXACTLY":
         return count == clue["k"]
     if t == "AT_LEAST":
@@ -239,8 +256,39 @@ def evaluate(clue, assignment, n):
 
 def referenced_cells(clue, n):
     """Các ô mà clue nhắc tới hoặc đếm (GUI dùng để tô sáng)."""
+    check_clue(clue, n)
     if clue["type"] == "FACT":
         return [clue["cell"]]
     if clue["type"] in ("SAME", "DIFFERENT"):
         return [clue["a"], clue["b"]]
     return region(clue["region"], n)
+
+
+def describe_clue(clue, n):
+    """Tạo câu tiếng Anh ngắn gọn cho clue để GUI hiển thị trên thẻ đã lật."""
+    check_clue(clue, n)
+    t = clue["type"]
+    if t == "FACT":
+        return f"{clue['cell']} is {'a criminal' if clue['status'] == 'CRIMINAL' else 'innocent'}."
+    if t == "SAME":
+        return f"{clue['a']} and {clue['b']} have the same status."
+    if t == "DIFFERENT":
+        return f"{clue['a']} and {clue['b']} have different statuses."
+    r = clue["region"]
+    kind = r["kind"]
+    where = {
+        "row": f"row {r.get('row')}",
+        "col": f"column {str(r.get('col', '')).upper()}",
+        "neighbors": f"neighbors of {r.get('of')}",
+        "explicit": "{" + ", ".join(r.get("cells", [])) + "}",
+        "corners": "the corners",
+        "boundary": "the boundary",
+        "between": f"cells between {r.get('a')} and {r.get('b')}",
+    }[kind]
+    if t == "NO" or (t == "EXACTLY" and clue["k"] == 0):
+        return f"No criminals in {where}."
+    if t == "PARITY":
+        return f"An {clue['parity'].lower()} number of criminals in {where}."
+    prefix = {"EXACTLY": "Exactly", "AT_LEAST": "At least", "AT_MOST": "At most"}[t]
+    k = clue["k"]
+    return f"{prefix} {k} {'criminal' if k == 1 else 'criminals'} in {where}."

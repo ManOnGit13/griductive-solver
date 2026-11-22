@@ -1,6 +1,6 @@
 # Phần 4.2 – Encoder (bản gọn)
 
-> Giải thích file [encoder.py](../Source/encoder.py) (~240 dòng). Dùng được cho phần **mô hình hóa** và **mã hóa CNF** trong báo cáo, và để ôn vấn đáp.
+> Giải thích file [encoder.py](../Source/encoder.py) (~285 dòng). Dùng được cho phần **mô hình hóa** và **mã hóa CNF** trong báo cáo, và để ôn vấn đáp.
 
 ## 1. Encoder làm gì?
 
@@ -12,12 +12,12 @@ $$KB_t = \text{CNF}(\text{các clue đã lật}) \land \text{unit clause của c
 |---|---|
 | Gán biến tất định | `var(cell, n)`, `cell_of(v, n)`, `all_cells(n)` |
 | Kiểm tra clue & vùng | `check_clue(clue, n)`, `region(spec, n)` → ném `ClueError` |
-| Chuyển clue sang CNF | `encode_clue(clue, n)` |
-| Verdict → unit clause, xây KB_t | `build_kb(revealed_clues, known, n)` |
+| Chuyển clue sang CNF | `encode_clue(clue, n)` (hỗ trợ cả `NO` = `EXACTLY(0, R)`) |
+| Verdict → unit clause, xây KB_t | `build_kb(revealed_clues, known, n)` (nhận được cả `bool` và `"CRIMINAL"`/`"INNOCENT"`) |
 | Báo số biến / mệnh đề | `stats` do `build_kb` trả về |
 | Bộ đánh giá trực tiếp | `evaluate(clue, assignment, n)` |
-| ≥ 2 extension | Ext 1: vùng `corners`, `boundary`, `between` · Ext 2: clue `PARITY` |
-| (cho GUI) highlight | `referenced_cells(clue, n)` |
+| ≥ 2 extension | Ext 1: vùng `corners`, `boundary`, `between` · Ext 2: clue `PARITY` (≤ 8 ô) |
+| Tiện ích cho GUI | `referenced_cells(clue, n)` (tô sáng ô), `describe_clue(clue, n)` (hiển thị câu chữ) |
 
 ## 2. Biến mệnh đề
 
@@ -66,15 +66,14 @@ $$\bigwedge_{S \subseteq R,\ |S| = k+1} \ \bigvee_{x \in S} \neg x \qquad (\tbin
 **AT_LEAST(k, R):** ít nhất $k$ Criminal ⇔ nhiều nhất $n-k$ Innocent ⇔ không có nhóm $n-k+1$ ô nào cùng Innocent:
 $$\bigwedge_{S \subseteq R,\ |S| = n-k+1} \ \bigvee_{x \in S} x$$
 
-**EXACTLY(k, R)** = AT_LEAST ∧ AT_MOST. Chữ "NO" trong game được viết thành `EXACTLY` với `k = 0`.
+**EXACTLY(k, R)** = AT_LEAST ∧ AT_MOST. **`NO(R)`** tương đương `EXACTLY(0, R)`.
 
 **Ví dụ clue đếm:** `EXACTLY(1, row 1)` trên lưới 3×3, với $R = \{1, 2, 3\}$:
 - AT_LEAST 1 (nhóm cỡ 3): $(C_1 \lor C_2 \lor C_3)$
 - AT_MOST 1 (nhóm cỡ 2): $(\neg C_1 \lor \neg C_2)(\neg C_1 \lor \neg C_3)(\neg C_2 \lor \neg C_3)$
 - Kết quả: `[[1, 2, 3], [-1, -2], [-1, -3], [-2, -3]]`
 
-**PARITY (Ext 2):** với mỗi phép gán $(b_1..b_n)$ có tính chẵn lẻ **sai**, thêm một mệnh đề chỉ sai đúng tại phép gán đó: $\bigvee_i (b_i\ ?\ \neg x_i : x_i)$. Tổng cộng $2^{n-1}$ mệnh đề.
-Ví dụ: `ODD` trên $\{x_1, x_2\}$ cấm $(0,0)$ và $(1,1)$, ra $(x_1 \lor x_2)(\neg x_1 \lor \neg x_2)$.
+**PARITY (Ext 2):** với mỗi phép gán $(b_1..b_n)$ có tính chẵn lẻ **sai**, thêm một mệnh đề chỉ sai đúng tại phép gán đó: $\bigvee_i (b_i\ ?\ \neg x_i : x_i)$. Tổng cộng $2^{n-1}$ mệnh đề (giới hạn cho vùng $\le 8$ ô, tức tối đa 128 mệnh đề, để tránh nổ tổ hợp trên vùng `boundary` của lưới 5×5).
 
 > [!NOTE]
 > Cách liệt kê tổ hợp được đề cho phép vì vùng nhỏ: vùng 8 ô chỉ sinh tối đa $\binom{8}{4} = 70$ mệnh đề. Không cần biến phụ nên dễ dẫn xuất và dễ debug.
@@ -83,7 +82,7 @@ Ví dụ: `ODD` trên $\{x_1, x_2\}$ cấm $(0,0)$ và $(1,1)$, ra $(x_1 \lor x_
 
 ```python
 from encoder import build_kb
-clauses, stats = build_kb(revealed_clues, {"B2": False}, 3)
+clauses, stats = build_kb(revealed_clues, {"B2": False}, 3)   # hoặc {"B2": "INNOCENT"}
 # clauses = [[...], ...]   biến 1..9
 # stats   = {"primary_vars": 9, "aux_vars": 0, "clauses": 4, "clues": 1, "units": 1}
 ```

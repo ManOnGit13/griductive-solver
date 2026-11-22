@@ -1,20 +1,16 @@
-# Hợp đồng giao tiếp giữa các phần — Griductive Solver
-
-> Chốt **định dạng đầu vào/đầu ra** để 4 người code song song mà ghép không vỡ.
-> **Encoder đã xong:** [encoder.py](../Source/encoder.py). Muốn đổi tên hàm hay trường dữ liệu ⇒ báo cả nhóm trước.
-
 ## 0. Thư mục & phân công
 
 ```
 Source/
-├── main.py            # Người 4 – chạy GUI
-├── encoder.py         # ✅ xong (4.2)
-├── solver.py          # Người 1 – DPLL (4.3)
-├── engine.py          # Người 3 – Game Engine (giữ đáp án ẩn)
-├── agent.py           # Người 3 – Logic Agent (4.4)
-├── gui.py             # Người 4 – GUI (4.1)
-├── experiments.py     # Người 3 – thực nghiệm (4.5)
-├── puzzles/*.json
+├── main.py            # Người 4 – chạy GUI (4.1)
+├── gui.py             # Người 4 – Giao diện GUI (4.1)
+├── engine.py          # Người 4 – Game Engine giữ đáp án ẩn (4.1)
+├── encoder.py         # Người 2 
+├── puzzles/*.json     # Người 2 – soạn bộ puzzle test (3x3, 4x4, 5x5)
+├── solver.py          # Người 1 – DPLL SAT Solver (4.3)
+├── agent.py           # Người 3 – Deductive Logic Agent (4.4)
+├── experiments.py     # Người 3 – Thực nghiệm (4.5)
+├── requirements.txt   # 
 └── tests/
 ```
 
@@ -23,7 +19,7 @@ flowchart LR
     GUI["gui.py"] --> ENG["engine.py"]
     GUI --> AG["agent.py"]
     ENG -->|"hỏi verdict có chứng minh được không"| AG
-    AG --> ENC["encoder.py ✅"]
+    AG --> ENC["encoder.py"]
     AG --> SOL["solver.py"]
 ```
 
@@ -36,7 +32,7 @@ flowchart LR
 |---|---|
 | Mã ô | Chuỗi chữ hoa `"C2"` (cột C, hàng 2) |
 | Trạng thái trong JSON | `"CRIMINAL"` / `"INNOCENT"` |
-| Trạng thái trong code | `True` = Criminal, `False` = Innocent |
+| Trạng thái trong code | `True` = Criminal, `False` = Innocent (hàm `encoder.as_bool()` nhận được cả hai dạng) |
 | Biến SAT | `1..N*N`, đánh theo hàng: `encoder.var("B2", 3) == 5`, `encoder.cell_of(5, 3) == "B2"` |
 | Literal / mệnh đề / CNF | `int` (`+v` đúng, `-v` sai) / `list[int]` / `list[list[int]]` |
 | Thứ tự duyệt ô | `encoder.all_cells(n)` (A1, B1, C1, A2, …) |
@@ -70,7 +66,8 @@ flowchart LR
 | `FACT` | `cell`, `status` |
 | `SAME`, `DIFFERENT` | `a`, `b` |
 | `EXACTLY`, `AT_LEAST`, `AT_MOST` | `k` (0 ≤ k ≤ số ô trong vùng), `region` |
-| `PARITY` (ext) | `parity` (`"ODD"`/`"EVEN"`), `region` |
+| `NO` | `region` (viết tắt của `EXACTLY` với `k = 0`) |
+| `PARITY` (ext) | `parity` (`"ODD"`/`"EVEN"`), `region` (tối đa 8 ô) |
 
 | region kind | Trường |
 |---|---|
@@ -83,18 +80,20 @@ flowchart LR
 
 Chi tiết: [ENCODER_GIAI_THICH.md](ENCODER_GIAI_THICH.md).
 
-## 4. Encoder API (✅ đã có)
+## 4. Encoder API 
 
 | Hàm | Vào | Ra |
 |---|---|---|
 | `var(cell, n)` / `cell_of(v, n)` | `"B2"`, 3 / 5, 3 | `5` / `"B2"` |
 | `all_cells(n)` | n | list ô theo thứ tự hàng |
+| `as_bool(status)` | `bool` hoặc `"CRIMINAL"`/`"INNOCENT"` | `bool` |
 | `region(spec, n)` | region dict | list ô |
 | `check_clue(clue, n)` | clue dict | không trả gì; ném `ClueError` nếu sai |
 | `encode_clue(clue, n)` | clue dict | `list[list[int]]` |
-| `build_kb(revealed_clues, known, n)` | list clue, `{cell: bool}` | `(clauses, stats)` |
-| `evaluate(clue, assignment, n)` | clue, `{cell: bool}` đầy đủ | `bool` |
+| `build_kb(revealed_clues, known, n)` | list clue, `{cell: bool\|str}` | `(clauses, stats)` |
+| `evaluate(clue, assignment, n)` | clue, `{cell: bool\|str}` đầy đủ | `bool` |
 | `referenced_cells(clue, n)` | clue | list ô (GUI dùng để highlight) |
+| `describe_clue(clue, n)` | clue | chuỗi tiếng Anh (GUI hiển thị lên thẻ đã lật) |
 
 `stats = {"primary_vars", "aux_vars" (luôn 0), "clauses", "clues", "units"}`. Tổng số biến luôn là `n*n`.
 
@@ -116,15 +115,16 @@ Hợp đồng:
 4. Chọn biến tất định: biến chưa gán có số nhỏ nhất, thử `True` trước.
 5. Có đủ unit propagation, phát hiện xung đột, đệ quy + quay lui, và 4 thông số trong `stats`.
 
-## 6. Game Engine — Người 3 (`engine.py`)
+## 6. Game Engine — Người 4 (`engine.py`)
 
 ```python
 @dataclass
-class PublicState:              # thứ DUY NHẤT Agent/GUI được thấy
+class PublicState:                     # thứ DUY NHẤT Agent/GUI được thấy
     size: int
-    characters: list[dict]      # [{"cell","name","profession"}] cho mọi ô
-    known: dict[str, bool]      # verdict đã chứng minh (gồm cả thẻ mở sẵn)
-    revealed_clues: list[dict]  # clue đã lật, theo thứ tự lật
+    characters: list[dict]             # [{"cell","name","profession"}] cho mọi ô
+    known: dict[str, bool]             # verdict đã chứng minh (gồm cả thẻ mở sẵn), True = Criminal
+    revealed_clues: list[dict]         # clue đã lật, theo thứ tự lật
+    clues_by_cell: dict[str, dict]     # {"B2": clue_dict, ...} để GUI vẽ đúng clue lên thẻ của ô đó
     solved: bool
 
 class GameEngine:
@@ -144,9 +144,13 @@ Logic của `submit_verdict(cell, verdict)`:
 c = agent.classify_cell(public_state(), cell)
 c == "UNKNOWN"          → NOT_PROVABLE  (không lật thẻ)
 c ngược với verdict     → CONTRADICTED  (không lật thẻ)
-c == verdict            → ACCEPTED: thêm vào known, lật thẻ, thêm clue vào revealed_clues
+c == verdict            → ACCEPTED: thêm vào known, lật thẻ, thêm clue vào revealed_clues & clues_by_cell
 c == "INCONSISTENT"     → INVALID ("puzzle lỗi")
 ```
+
+> **Mẹo để Người 4 và Người 3 code song song không phải chờ nhau:**
+> - Trong `GameEngine.__init__(self, path, classify_fn=None)`, nếu `classify_fn` chưa truyền vào thì mới `from agent import classify_cell`. Lúc Người 3 chưa code xong `agent.py`, Người 4 chỉ cần truyền một hàm giả `classify_fn=lambda state, cell: ...` là test được toàn bộ `engine.py` và `gui.py`.
+> - Ngược lại, Người 3 khi test `classify_cell`, `classify`, `hint` chỉ cần truyền một `SimpleNamespace(size=3, known=..., revealed_clues=...)` giả lập `PublicState` mà không cần chờ `engine.py` của Người 4.
 
 ## 7. Logic Agent — Người 3 (`agent.py`)
 
@@ -181,6 +185,7 @@ Mỗi bước trong `trace`:
 | Thao tác | Gọi |
 |---|---|
 | Load / Restart | `GameEngine(path)` / `engine.restart()` |
+| Vẽ chữ trên thẻ đã lật `cell` | `describe_clue(state.clues_by_cell[cell], n)` |
 | Bấm CRIMINAL / INNOCENT | `engine.submit_verdict(cell, verdict)` → hiện `status` + `message` |
 | Click một clue | `referenced_cells(clue, n)` → highlight các ô |
 | Hint | `agent.hint(engine.public_state())` |
@@ -189,12 +194,3 @@ Mỗi bước trong `trace`:
 ## 9. Thực nghiệm — Người 3
 
 Xuất `results.csv` với các cột: `puzzle_id, size, primary_vars, aux_vars, clauses, sat_calls, decisions, propagations, backtracks, steps, runtime_ms, status, unique`. **Giữ lại** các ca lỗi/timeout, không xóa.
-
-## 10. Checklist trước khi ghép
-
-- [ ] `python -m unittest discover -s tests` pass.
-- [ ] Solver cho kết quả đúng trên CNF sinh từ `encoder.py` (so với `evaluate` khi vét cạn 3×3).
-- [ ] `auto_solve` chạy dòng lệnh trên `sample_3x3.json` → `SOLVED`.
-- [ ] Khi verdict bị từ chối thì **không lật thẻ**.
-- [ ] `agent.py` không đọc `status`/`clue` của thẻ chưa lật.
-- [ ] Xong mấy bước trên mới nối GUI.

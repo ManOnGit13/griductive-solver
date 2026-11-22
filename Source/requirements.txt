@@ -1,0 +1,1 @@
+# Thư viện cài thêm (hiện tại chỉ dùng thư viện chuẩn của Python >= 3.10, bao gồm tkinter cho GUI)

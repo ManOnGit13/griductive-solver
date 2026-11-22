@@ -9,8 +9,8 @@ import unittest
 SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, SRC)
 
-from encoder import (ClueError, all_cells, build_kb, encode_clue, evaluate,  # noqa: E402
-                     region, var)
+from encoder import (ClueError, all_cells, build_kb, describe_clue, encode_clue,  # noqa: E402
+                     evaluate, referenced_cells, region, var)
 
 
 def worlds(n):
@@ -40,6 +40,8 @@ class EncoderTests(unittest.TestCase):
         self.assertEqual(encode_clue({"type": "SAME", "a": "A1", "b": "B1"}, 3), [[-1, 2], [1, -2]])
         self.assertEqual(encode_clue({"type": "EXACTLY", "k": 1, "region": {"kind": "row", "row": 1}}, 3),
                          [[1, 2, 3], [-1, -2], [-1, -3], [-2, -3]])
+        self.assertEqual(encode_clue({"type": "NO", "region": {"kind": "row", "row": 1}}, 3),
+                         [[-1], [-2], [-3]])
 
     def test_invalid_clues(self):
         bad = [
@@ -55,6 +57,9 @@ class EncoderTests(unittest.TestCase):
         for clue in bad:
             with self.assertRaises(ClueError, msg=str(clue)):
                 encode_clue(clue, 3)
+        # PARITY trên vùng > 8 ô (vd boundary 4x4 có 12 ô) phải bị chặn
+        with self.assertRaises(ClueError):
+            encode_clue({"type": "PARITY", "parity": "ODD", "region": {"kind": "boundary"}}, 4)
 
     def test_cnf_matches_evaluator_on_all_512_assignments(self):
         # CNF của mỗi clue phải cho kết quả giống evaluate trên cả 512 phép gán của lưới 3x3
@@ -64,6 +69,7 @@ class EncoderTests(unittest.TestCase):
             {"type": "FACT", "cell": "C3", "status": "INNOCENT"},
             {"type": "SAME", "a": "A1", "b": "C3"},
             {"type": "DIFFERENT", "a": "A1", "b": "B1"},
+            {"type": "NO", "region": {"kind": "row", "row": 1}},
             {"type": "PARITY", "parity": "ODD", "region": {"kind": "col", "col": "A"}},
             {"type": "PARITY", "parity": "EVEN", "region": {"kind": "boundary"}},
         ]
@@ -76,10 +82,19 @@ class EncoderTests(unittest.TestCase):
             for w in all_worlds:
                 self.assertEqual(cnf_true(cnf, w, n), evaluate(clue, w, n), clue)
 
-    def test_build_kb(self):
-        clauses, stats = build_kb([{"type": "SAME", "a": "A1", "b": "B1"}], {"C3": True, "B2": False}, 3)
+    def test_build_kb_and_gui_helpers(self):
+        # Kiểm tra truyền cả bool lẫn chuỗi 'CRIMINAL'/'INNOCENT' vào build_kb
+        clauses, stats = build_kb(
+            [{"type": "SAME", "a": "A1", "b": "B1"}],
+            {"C3": "CRIMINAL", "B2": "INNOCENT"},
+            3,
+        )
         self.assertEqual(clauses, [[-1, 2], [1, -2], [-5], [9]])
         self.assertEqual(stats, {"primary_vars": 9, "aux_vars": 0, "clauses": 4, "clues": 1, "units": 2})
+
+        clue = {"type": "EXACTLY", "k": 1, "region": {"kind": "row", "row": 1}}
+        self.assertEqual(referenced_cells(clue, 3), ["A1", "B1", "C1"])
+        self.assertEqual(describe_clue(clue, 3), "Exactly 1 criminal in row 1.")
 
 
 class SamplePuzzleTest(unittest.TestCase):
@@ -97,7 +112,6 @@ class SamplePuzzleTest(unittest.TestCase):
         self.assertEqual(models([ch["clue"] for ch in chars.values()], {}), [solution])
 
         # Mô phỏng vòng suy luận: mỗi bước phải có ít nhất 1 ô bị ép (không phải đoán)
-
         known = {c: solution[c] for c in p["initially_revealed"]}
         while len(known) < n * n:
             ms = models([chars[c]["clue"] for c in known], known)
