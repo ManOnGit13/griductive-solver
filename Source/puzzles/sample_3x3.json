@@ -1,0 +1,25 @@
+{
+  "id": "sample-3x3-01",
+  "size": 3,
+  "initially_revealed": ["B2"],
+  "characters": [
+    {"cell": "A1", "name": "Alice", "profession": "Baker",    "status": "INNOCENT",
+     "clue": {"id": "clue_A1", "type": "EXACTLY", "k": 1, "region": {"kind": "row", "row": 1}}},
+    {"cell": "B1", "name": "Bob",   "profession": "Cook",     "status": "CRIMINAL",
+     "clue": {"id": "clue_B1", "type": "EXACTLY", "k": 1, "region": {"kind": "corners"}}},
+    {"cell": "C1", "name": "Cara",  "profession": "Doctor",   "status": "INNOCENT",
+     "clue": {"id": "clue_C1", "type": "PARITY", "parity": "ODD", "region": {"kind": "col", "col": "C"}}},
+    {"cell": "A2", "name": "Dan",   "profession": "Farmer",   "status": "CRIMINAL",
+     "clue": {"id": "clue_A2", "type": "SAME", "a": "A1", "b": "B2"}},
+    {"cell": "B2", "name": "Eve",   "profession": "Guard",    "status": "INNOCENT",
+     "clue": {"id": "clue_B2", "type": "EXACTLY", "k": 0, "region": {"kind": "explicit", "cells": ["A1", "C1", "C2"]}}},
+    {"cell": "C2", "name": "Finn",  "profession": "Judge",    "status": "INNOCENT",
+     "clue": {"id": "clue_C2", "type": "DIFFERENT", "a": "A2", "b": "B3"}},
+    {"cell": "A3", "name": "Gina",  "profession": "Mechanic", "status": "INNOCENT",
+     "clue": {"id": "clue_A3", "type": "EXACTLY", "k": 1, "region": {"kind": "col", "col": "A"}}},
+    {"cell": "B3", "name": "Hank",  "profession": "Painter",  "status": "INNOCENT",
+     "clue": {"id": "clue_B3", "type": "EXACTLY", "k": 0, "region": {"kind": "between", "a": "A2", "b": "C2"}}},
+    {"cell": "C3", "name": "Ivy",   "profession": "Sheriff",  "status": "CRIMINAL",
+     "clue": {"id": "clue_C3", "type": "FACT", "cell": "A3", "status": "INNOCENT"}}
+  ]
+}
