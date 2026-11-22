@@ -1,6 +1,4 @@
-# Phần 4.2 – Encoder (bản gọn)
 
-> Giải thích file [encoder.py](../Source/encoder.py) (~285 dòng). Dùng được cho phần **mô hình hóa** và **mã hóa CNF** trong báo cáo, và để ôn vấn đáp.
 
 ## 1. Encoder làm gì?
 
@@ -102,8 +100,3 @@ python -m unittest discover -s tests -v
 
 Test chính: với mỗi clue, duyệt **toàn bộ 512 phép gán** của lưới 3×3 và kiểm tra CNF đúng ⇔ `evaluate` đúng. Ngoài ra có test kiểm tra puzzle mẫu có đúng 1 nghiệm và giải được hết mà không đoán.
 
-## 8. Câu hỏi vấn đáp hay gặp
-
-- **Vì sao không dùng biến phụ?** Vùng nhỏ nên liệt kê tổ hợp là đủ, đề cũng cho phép. Không có biến phụ thì nghiệm của DPLL chính là đáp án, và kiểm tra nghiệm duy nhất cũng đơn giản.
-- **Vì sao AT_LEAST dùng nhóm cỡ $n-k+1$?** Nếu có $n-k+1$ ô cùng Innocent thì còn lại tối đa $k-1$ Criminal, tức là vi phạm. Cấm mọi nhóm như vậy là đủ và cũng là cần.
-- **Làm sao không lộ đáp án?** `build_kb` chỉ nhận clue đã lật và verdict đã chứng minh. Engine giữ `status`/`clue` ẩn và không đưa cho Agent.
