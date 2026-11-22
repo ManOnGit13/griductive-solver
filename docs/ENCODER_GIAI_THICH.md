@@ -45,7 +45,7 @@ Literal `+5` = "B2 là Criminal", `-5` = "B2 là Innocent". **Không dùng biế
 
 Kết quả luôn là danh sách ô không trùng, sắp theo thứ tự biến, không rỗng (rỗng thì báo lỗi).
 
-## 4. Dẫn xuất CNF (dùng cho báo cáo)
+## 4. Dẫn xuất CNF 
 
 Ký hiệu: $a, b$ là biến của 2 ô; $R = \{x_1..x_n\}$ là các biến trong vùng.
 
