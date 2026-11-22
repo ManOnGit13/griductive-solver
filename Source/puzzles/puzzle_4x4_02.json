@@ -1,0 +1,239 @@
+{
+  "id": "puzzle-4x4-02",
+  "size": 4,
+  "initially_revealed": [
+    "B2"
+  ],
+  "characters": [
+    {
+      "cell": "A1",
+      "name": "Adam",
+      "profession": "Actor",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_A1",
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "row",
+          "row": 1
+        }
+      }
+    },
+    {
+      "cell": "B1",
+      "name": "Beth",
+      "profession": "Botanist",
+      "status": "CRIMINAL",
+      "clue": {
+        "id": "clue_B1",
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "col",
+          "col": "A"
+        }
+      }
+    },
+    {
+      "cell": "C1",
+      "name": "Carl",
+      "profession": "Carpenter",
+      "status": "CRIMINAL",
+      "clue": {
+        "id": "clue_C1",
+        "type": "DIFFERENT",
+        "a": "C1",
+        "b": "C2"
+      }
+    },
+    {
+      "cell": "D1",
+      "name": "Dana",
+      "profession": "Designer",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_D1",
+        "type": "PARITY",
+        "parity": "EVEN",
+        "region": {
+          "kind": "row",
+          "row": 2
+        }
+      }
+    },
+    {
+      "cell": "A2",
+      "name": "Eric",
+      "profession": "Economist",
+      "status": "CRIMINAL",
+      "clue": {
+        "id": "clue_A2",
+        "type": "SAME",
+        "a": "B2",
+        "b": "B3"
+      }
+    },
+    {
+      "cell": "B2",
+      "name": "Faye",
+      "profession": "Falconer",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_B2",
+        "type": "NO",
+        "region": {
+          "kind": "corners"
+        }
+      }
+    },
+    {
+      "cell": "C2",
+      "name": "Greg",
+      "profession": "Goldsmith",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_C2",
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "kind": "col",
+          "col": "D"
+        }
+      }
+    },
+    {
+      "cell": "D2",
+      "name": "Hope",
+      "profession": "Herbalist",
+      "status": "CRIMINAL",
+      "clue": {
+        "id": "clue_D2",
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "row",
+          "row": 3
+        }
+      }
+    },
+    {
+      "cell": "A3",
+      "name": "Ivan",
+      "profession": "Inventor",
+      "status": "CRIMINAL",
+      "clue": {
+        "id": "clue_A3",
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "col",
+          "col": "B"
+        }
+      }
+    },
+    {
+      "cell": "B3",
+      "name": "Jade",
+      "profession": "Journalist",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_B3",
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "col",
+          "col": "C"
+        }
+      }
+    },
+    {
+      "cell": "C3",
+      "name": "Kyle",
+      "profession": "Kayaker",
+      "status": "CRIMINAL",
+      "clue": {
+        "id": "clue_C3",
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "kind": "row",
+          "row": 4
+        }
+      }
+    },
+    {
+      "cell": "D3",
+      "name": "Lily",
+      "profession": "Librarian",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_D3",
+        "type": "AT_LEAST",
+        "k": 4,
+        "region": {
+          "kind": "neighbors",
+          "of": "B2"
+        }
+      }
+    },
+    {
+      "cell": "A4",
+      "name": "Mark",
+      "profession": "Machinist",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_A4",
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "neighbors",
+          "of": "A4"
+        }
+      }
+    },
+    {
+      "cell": "B4",
+      "name": "Nina",
+      "profession": "Nurse",
+      "status": "CRIMINAL",
+      "clue": {
+        "id": "clue_B4",
+        "type": "PARITY",
+        "parity": "ODD",
+        "region": {
+          "kind": "between",
+          "a": "A4",
+          "b": "D4"
+        }
+      }
+    },
+    {
+      "cell": "C4",
+      "name": "Omar",
+      "profession": "Organist",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_C4",
+        "type": "AT_MOST",
+        "k": 2,
+        "region": {
+          "kind": "neighbors",
+          "of": "D4"
+        }
+      }
+    },
+    {
+      "cell": "D4",
+      "name": "Paul",
+      "profession": "Pilot",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_D4",
+        "type": "FACT",
+        "cell": "B4",
+        "status": "CRIMINAL"
+      }
+    }
+  ]
+}

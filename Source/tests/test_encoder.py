@@ -98,27 +98,39 @@ class EncoderTests(unittest.TestCase):
 
 
 class SamplePuzzleTest(unittest.TestCase):
-    def test_unique_and_solvable_without_guessing(self):
-        with open(os.path.join(SRC, "puzzles", "sample_3x3.json"), encoding="utf-8") as f:
-            p = json.load(f)
-        n, chars = p["size"], {c["cell"]: c for c in p["characters"]}
-        solution = {c: ch["status"] == "CRIMINAL" for c, ch in chars.items()}
+    def test_all_puzzles_valid_and_3x3_unique_no_guess(self):
+        puzzles_dir = os.path.join(SRC, "puzzles")
+        files = sorted(f for f in os.listdir(puzzles_dir) if f.endswith(".json"))
+        self.assertGreaterEqual(len(files), 6)
 
-        def models(clues, known):
-            cnf, _ = build_kb(clues, known, n)
-            return [w for w in worlds(n) if cnf_true(cnf, w, n)]
+        for fname in files:
+            with open(os.path.join(puzzles_dir, fname), encoding="utf-8") as f:
+                p = json.load(f)
+            n, chars = p["size"], {c["cell"]: c for c in p["characters"]}
+            self.assertEqual([c["cell"] for c in p["characters"]], all_cells(n), fname)
+            solution = {c: ch["status"] == "CRIMINAL" for c, ch in chars.items()}
 
-        # Toàn bộ clue phải cho đúng 1 nghiệm
-        self.assertEqual(models([ch["clue"] for ch in chars.values()], {}), [solution])
+            # Mọi clue trong puzzle phải hợp lệ, tạo được câu mô tả và đúng với đáp án
+            for c, ch in chars.items():
+                self.assertTrue(describe_clue(ch["clue"], n), f"{fname}:{c}")
+                self.assertTrue(evaluate(ch["clue"], solution, n), f"{fname}:{c}")
 
-        # Mô phỏng vòng suy luận: mỗi bước phải có ít nhất 1 ô bị ép (không phải đoán)
-        known = {c: solution[c] for c in p["initially_revealed"]}
-        while len(known) < n * n:
-            ms = models([chars[c]["clue"] for c in known], known)
-            forced = {c: ms[0][c] for c in all_cells(n) if c not in known and len({m[c] for m in ms}) == 1}
-            self.assertTrue(forced, f"stuck at {known}")
-            known.update(forced)
-        self.assertEqual(known, solution)
+            if n == 3:
+                def models(clues, known):
+                    cnf, _ = build_kb(clues, known, n)
+                    return [w for w in worlds(n) if cnf_true(cnf, w, n)]
+
+                # Toàn bộ clue phải cho đúng 1 nghiệm
+                self.assertEqual(models([ch["clue"] for ch in chars.values()], {}), [solution], fname)
+
+                # Mô phỏng vòng suy luận: mỗi bước phải có ít nhất 1 ô bị ép (không phải đoán)
+                known = {c: solution[c] for c in p["initially_revealed"]}
+                while len(known) < n * n:
+                    ms = models([chars[c]["clue"] for c in known], known)
+                    forced = {c: ms[0][c] for c in all_cells(n) if c not in known and len({m[c] for m in ms}) == 1}
+                    self.assertTrue(forced, f"{fname} stuck at {known}")
+                    known.update(forced)
+                self.assertEqual(known, solution, fname)
 
 
 if __name__ == "__main__":

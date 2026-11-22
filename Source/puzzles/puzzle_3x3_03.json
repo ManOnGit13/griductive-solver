@@ -1,0 +1,139 @@
+{
+  "id": "puzzle-3x3-03",
+  "size": 3,
+  "initially_revealed": [
+    "C1"
+  ],
+  "characters": [
+    {
+      "cell": "A1",
+      "name": "Amber",
+      "profession": "Artist",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_A1",
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "row",
+          "row": 2
+        }
+      }
+    },
+    {
+      "cell": "B1",
+      "name": "Brian",
+      "profession": "Barista",
+      "status": "CRIMINAL",
+      "clue": {
+        "id": "clue_B1",
+        "type": "NO",
+        "region": {
+          "kind": "explicit",
+          "cells": [
+            "A1",
+            "B2"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "C1",
+      "name": "Chloe",
+      "profession": "Curator",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_C1",
+        "type": "DIFFERENT",
+        "a": "B1",
+        "b": "C1"
+      }
+    },
+    {
+      "cell": "A2",
+      "name": "Derek",
+      "profession": "Driver",
+      "status": "CRIMINAL",
+      "clue": {
+        "id": "clue_A2",
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "kind": "corners"
+        }
+      }
+    },
+    {
+      "cell": "B2",
+      "name": "Elena",
+      "profession": "Editor",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_B2",
+        "type": "SAME",
+        "a": "A1",
+        "b": "A3"
+      }
+    },
+    {
+      "cell": "C2",
+      "name": "Felix",
+      "profession": "Firefighter",
+      "status": "CRIMINAL",
+      "clue": {
+        "id": "clue_C2",
+        "type": "PARITY",
+        "parity": "EVEN",
+        "region": {
+          "kind": "row",
+          "row": 3
+        }
+      }
+    },
+    {
+      "cell": "A3",
+      "name": "Grace",
+      "profession": "Gardener",
+      "status": "INNOCENT",
+      "clue": {
+        "id": "clue_A3",
+        "type": "EXACTLY",
+        "k": 5,
+        "region": {
+          "kind": "boundary"
+        }
+      }
+    },
+    {
+      "cell": "B3",
+      "name": "Henry",
+      "profession": "Hotelier",
+      "status": "CRIMINAL",
+      "clue": {
+        "id": "clue_B3",
+        "type": "EXACTLY",
+        "k": 0,
+        "region": {
+          "kind": "between",
+          "a": "A2",
+          "b": "C2"
+        }
+      }
+    },
+    {
+      "cell": "C3",
+      "name": "Irene",
+      "profession": "Illustrator",
+      "status": "CRIMINAL",
+      "clue": {
+        "id": "clue_C3",
+        "type": "AT_LEAST",
+        "k": 2,
+        "region": {
+          "kind": "col",
+          "col": "B"
+        }
+      }
+    }
+  ]
+}
