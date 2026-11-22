@@ -148,9 +148,6 @@ c == verdict            → ACCEPTED: thêm vào known, lật thẻ, thêm clue 
 c == "INCONSISTENT"     → INVALID ("puzzle lỗi")
 ```
 
-> **Mẹo để Người 4 và Người 3 code song song không phải chờ nhau:**
-> - Trong `GameEngine.__init__(self, path, classify_fn=None)`, nếu `classify_fn` chưa truyền vào thì mới `from agent import classify_cell`. Lúc Người 3 chưa code xong `agent.py`, Người 4 chỉ cần truyền một hàm giả `classify_fn=lambda state, cell: ...` là test được toàn bộ `engine.py` và `gui.py`.
-> - Ngược lại, Người 3 khi test `classify_cell`, `classify`, `hint` chỉ cần truyền một `SimpleNamespace(size=3, known=..., revealed_clues=...)` giả lập `PublicState` mà không cần chờ `engine.py` của Người 4.
 
 ## 7. Logic Agent — Người 3 (`agent.py`)
 
