@@ -283,3 +283,45 @@ def analyze_uniqueness(clues: list[dict], n: int) -> dict[str, Any]:
 
 def check_uniqueness(clues: list[dict], n: int) -> bool:
     return analyze_uniqueness(clues, n)["unique"]
+
+
+def step(engine: GameEngine) -> dict[str, Any]:
+    """GUI extension: one reveal, using the same probes as upstream auto_solve.
+
+    Statistics cover discovery SAT queries, matching upstream trace semantics.
+    The engine's independent verdict revalidation is excluded.
+    """
+    state = engine.public_state()
+    clauses, kb_stats = build_kb(state.revealed_clues, state.known, state.size)
+    totals = _new_stats()
+    base = solve(clauses, state.size ** 2)
+    _add_stats(totals, base["stats"])
+    queries = [{"cell": "—", "query": "KB", "result": base["status"]}]
+
+    def finish(status, trace=None):
+        return {"status": status, "trace": trace or [], "totals": totals, "queries": queries}
+
+    if base["status"] == "UNSAT":
+        return finish("INCONSISTENT")
+    if state.solved:
+        return finish("SOLVED")
+    for cell in all_cells(state.size):
+        if cell in state.known:
+            continue
+        verdict = _probe_cell(clauses, state.size ** 2, cell, state.size,
+                              stats_acc=totals, queries_out=queries)
+        if verdict not in VALID_VERDICTS:
+            continue
+        reply = engine.submit_verdict(cell, verdict)
+        if reply.get("status") != "ACCEPTED":
+            return finish("INCONSISTENT" if reply.get("status") == "INVALID" else "STUCK")
+        next_state = engine.public_state()
+        if len(next_state.known) <= len(state.known) and not next_state.solved:
+            return finish("STUCK")
+        clue = reply.get("revealed_clue")
+        entry = {"step": 1, "active_clues": [_clue_id(c, i) for i, c in enumerate(state.revealed_clues)],
+                 "kb_clauses": kb_stats["clauses"], "queries": queries,
+                 "verdict": {"cell": cell, "status": verdict},
+                 "revealed_clue": _clue_id(clue) if clue else None, "solver_stats": totals.copy()}
+        return finish("SOLVED" if next_state.solved else "PROGRESS", [entry])
+    return finish("STUCK")

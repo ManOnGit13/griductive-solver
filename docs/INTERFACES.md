@@ -163,6 +163,7 @@ def classify_cell(state: PublicState, cell: str) -> str:
 def classify(state) -> dict[str, str]          # mọi ô chưa biết → kết quả
 def hint(state) -> dict | None                 # {"cell", "verdict", "clue_ids"}: ô bị ép đầu tiên theo thứ tự hàng
 def auto_solve(engine) -> dict                 # {"status": "SOLVED"|"STUCK"|"INCONSISTENT", "trace": [...], "totals": {...}}
+def step(engine) -> dict                       # GUI: tối đa 1 verdict, cùng trace/totals; thêm status "PROGRESS"
 def check_uniqueness(clues, n) -> bool         # giải → được M1; thêm mệnh đề chặn M1; giải lại: UNSAT ⇒ duy nhất
 ```
 
@@ -177,11 +178,21 @@ Mỗi bước trong `trace`:
 
 `clue_ids` của Hint: các clue đã lật mà `referenced_cells` có chứa ô đó (hoặc thử bỏ từng clue xem ô có còn bị ép không).
 
+Triển khai đồng bộ GitHub `0d2ece1`: Hint ưu tiên các clue cần thiết qua phép thử
+loại bỏ, sau đó fallback về clue tham chiếu đến ô; không cam kết tối thiểu.
+Hint không thay đổi state. `step()` là phần mở rộng để GUI gọi từng
+bước bằng worker rồi cập nhật Tk trên luồng chính; Auto Solve của GUI lặp `step()`
+để có thể quan sát và dừng giữa các bước. API `auto_solve(engine)` vẫn có sẵn.
+`totals` gồm `sat_calls`, `decisions`, `propagations`, `backtracks`, `runtime_ms`;
+chỉ đếm SAT calls tìm verdict, chưa gồm engine kiểm chứng lại (theo ngữ nghĩa
+trace upstream). Runtime của `step()` là thời gian SAT, không bao gồm hoạt ảnh;
+runtime tổng của `auto_solve()` upstream là thời gian toàn lượt giải.
+
 ## 8. GUI — Người 4 (`gui.py`)
 
 | Thao tác | Gọi |
 |---|---|
-| Load / Restart | `GameEngine(path)` / `engine.restart()` |
+| Chọn kích thước / Ván mới (Load bàn tích hợp) / Chơi lại (Restart) | `GameEngine(path)` / `engine.restart()` |
 | Vẽ chữ trên thẻ đã lật `cell` | `describe_clue(state.clues_by_cell[cell], n)` |
 | Bấm CRIMINAL / INNOCENT | `engine.submit_verdict(cell, verdict)` → hiện `status` + `message` |
 | Click một clue | `referenced_cells(clue, n)` → highlight các ô |
