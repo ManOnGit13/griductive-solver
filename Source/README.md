@@ -12,8 +12,8 @@ python main.py
 
 Ứng dụng tự mở bàn 3×3. Chọn **Kích thước** 3×3, 4×4 hoặc 5×5 để bắt đầu
 bàn tương ứng; người chơi không cần chuẩn bị hoặc nạp JSON. **Ván mới** chọn
-bàn khác trong bộ có sẵn cùng kích thước (nếu có). Hiện có 3 bàn 3×3,
-2 bàn 4×4 và 1 bàn 5×5; chưa có bộ sinh puzzle vô hạn.
+bàn khác trong bộ có sẵn cùng kích thước (nếu có). Hiện có 2 bàn 3×3,
+2 bàn 4×4 và 2 bàn 5×5; chưa có bộ sinh puzzle vô hạn.
 Có thể chạy `main.py` bằng đường dẫn tuyệt đối từ thư mục khác.
 Kiểm tra Tkinter bằng `python -m tkinter` nếu gặp lỗi môi trường.
 

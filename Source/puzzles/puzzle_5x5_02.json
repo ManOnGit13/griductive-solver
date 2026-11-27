@@ -1,0 +1,389 @@
+{
+  "id": "puzzle-5x5-02",
+  "size": 5,
+  "initially_revealed": [
+    "A1"
+  ],
+  "characters": [
+    {
+      "cell": "A1",
+      "name": "Arthur",
+      "profession": "Architect",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 3,
+        "region": {
+          "kind": "corners"
+        },
+        "id": "clue_A1"
+      }
+    },
+    {
+      "cell": "B1",
+      "name": "Bella",
+      "profession": "Baker",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "neighbors",
+          "of": "A1"
+        },
+        "id": "clue_B1"
+      }
+    },
+    {
+      "cell": "C1",
+      "name": "Caleb",
+      "profession": "Chef",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "row",
+          "row": 1
+        },
+        "id": "clue_C1"
+      }
+    },
+    {
+      "cell": "D1",
+      "name": "Diana",
+      "profession": "Doctor",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 3,
+        "region": {
+          "kind": "row",
+          "row": 5
+        },
+        "id": "clue_D1"
+      }
+    },
+    {
+      "cell": "E1",
+      "name": "Ethan",
+      "profession": "Engineer",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "NO",
+        "region": {
+          "kind": "explicit",
+          "cells": [
+            "C1",
+            "D1"
+          ]
+        },
+        "id": "clue_E1"
+      }
+    },
+    {
+      "cell": "A2",
+      "name": "Fiona",
+      "profession": "Florist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "col",
+          "col": "A"
+        },
+        "id": "clue_A2"
+      }
+    },
+    {
+      "cell": "B2",
+      "name": "Gavin",
+      "profession": "Guard",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "col",
+          "col": "B"
+        },
+        "id": "clue_B2"
+      }
+    },
+    {
+      "cell": "C2",
+      "name": "Hazel",
+      "profession": "Historian",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "DIFFERENT",
+        "a": "B2",
+        "b": "C2",
+        "id": "clue_C2"
+      }
+    },
+    {
+      "cell": "D2",
+      "name": "Ian",
+      "profession": "Illustrator",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "col",
+          "col": "D"
+        },
+        "id": "clue_D2"
+      }
+    },
+    {
+      "cell": "E2",
+      "name": "Julia",
+      "profession": "Judge",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 3,
+        "region": {
+          "kind": "col",
+          "col": "E"
+        },
+        "id": "clue_E2"
+      }
+    },
+    {
+      "cell": "A3",
+      "name": "Kevin",
+      "profession": "Keeper",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "NO",
+        "region": {
+          "kind": "explicit",
+          "cells": [
+            "B3",
+            "E3"
+          ]
+        },
+        "id": "clue_A3"
+      }
+    },
+    {
+      "cell": "B3",
+      "name": "Luna",
+      "profession": "Librarian",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "row",
+          "row": 3
+        },
+        "id": "clue_B3"
+      }
+    },
+    {
+      "cell": "C3",
+      "name": "Miles",
+      "profession": "Mechanic",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "SAME",
+        "a": "C2",
+        "b": "C3",
+        "id": "clue_C3"
+      }
+    },
+    {
+      "cell": "D3",
+      "name": "Nora",
+      "profession": "Nurse",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "PARITY",
+        "parity": "ODD",
+        "region": {
+          "kind": "explicit",
+          "cells": [
+            "C3",
+            "D3",
+            "D5"
+          ]
+        },
+        "id": "clue_D3"
+      }
+    },
+    {
+      "cell": "E3",
+      "name": "Oscar",
+      "profession": "Optician",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "PARITY",
+        "parity": "EVEN",
+        "region": {
+          "kind": "col",
+          "col": "C"
+        },
+        "id": "clue_E3"
+      }
+    },
+    {
+      "cell": "A4",
+      "name": "Paula",
+      "profession": "Pilot",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "row",
+          "row": 4
+        },
+        "id": "clue_A4"
+      }
+    },
+    {
+      "cell": "B4",
+      "name": "Quinn",
+      "profession": "Quilter",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "kind": "neighbors",
+          "of": "A5"
+        },
+        "id": "clue_B4"
+      }
+    },
+    {
+      "cell": "C4",
+      "name": "Reed",
+      "profession": "Reporter",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "DIFFERENT",
+        "a": "C3",
+        "b": "C4",
+        "id": "clue_C4"
+      }
+    },
+    {
+      "cell": "D4",
+      "name": "Sara",
+      "profession": "Sculptor",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "neighbors",
+          "of": "E5"
+        },
+        "id": "clue_D4"
+      }
+    },
+    {
+      "cell": "E4",
+      "name": "Theo",
+      "profession": "Tailor",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 2,
+        "region": {
+          "kind": "explicit",
+          "cells": [
+            "D5",
+            "E4",
+            "E5"
+          ]
+        },
+        "id": "clue_E4"
+      }
+    },
+    {
+      "cell": "A5",
+      "name": "Ursula",
+      "profession": "Usher",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "kind": "between",
+          "a": "A1",
+          "b": "A5"
+        },
+        "id": "clue_A5"
+      }
+    },
+    {
+      "cell": "B5",
+      "name": "Victor",
+      "profession": "Violinist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "NO",
+        "region": {
+          "kind": "explicit",
+          "cells": [
+            "D2",
+            "E2"
+          ]
+        },
+        "id": "clue_B5"
+      }
+    },
+    {
+      "cell": "C5",
+      "name": "Wendy",
+      "profession": "Writer",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "row",
+          "row": 2
+        },
+        "id": "clue_C5"
+      }
+    },
+    {
+      "cell": "D5",
+      "name": "Xavier",
+      "profession": "Xylophonist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "kind": "col",
+          "col": "D"
+        },
+        "id": "clue_D5"
+      }
+    },
+    {
+      "cell": "E5",
+      "name": "Yara",
+      "profession": "Yachtswoman",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "NO",
+        "region": {
+          "kind": "between",
+          "a": "A5",
+          "b": "D5"
+        },
+        "id": "clue_E5"
+      }
+    }
+  ]
+}

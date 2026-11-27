@@ -20,9 +20,9 @@ from card_widgets import (SuspectCard, portrait, BACKGROUND, SURFACE, TEXT,
 
 PUZZLES = Path(__file__).resolve().parent / "puzzles"
 SIZE_PUZZLES = {
-    "3 × 3": ("sample_3x3.json", "puzzle_3x3_02.json", "puzzle_3x3_03.json"),
+    "3 × 3": ("sample_3x3.json", "puzzle_3x3_02.json"),
     "4 × 4": ("puzzle_4x4_01.json", "puzzle_4x4_02.json"),
-    "5 × 5": ("puzzle_5x5_stress.json",),
+    "5 × 5": ("puzzle_5x5_stress.json", "puzzle_5x5_02.json"),
 }
 BG = BACKGROUND
 INK = TEXT
